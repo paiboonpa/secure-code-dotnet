@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using System;
-using BCrypt.Net;
+using static BCrypt.Net.BCrypt;
 
 [Route("[controller]")]
 [ApiController]
@@ -10,7 +9,7 @@ public class HashController : ControllerBase
     public IActionResult Hash([FromQuery] string? password)
     {
         string databasePassword = "password";
-        string hashedDatabasePassword = BCrypt.Net.BCrypt.HashPassword(databasePassword);
+        string hashedDatabasePassword = HashPassword(databasePassword);
         string result = $"Database password: {hashedDatabasePassword}<br>";
 
         if (string.IsNullOrEmpty(password))
@@ -19,7 +18,7 @@ public class HashController : ControllerBase
             return Content(result, "text/html");
         }
 
-        string hashedInputPassword = BCrypt.Net.BCrypt.HashPassword(password);
+        string hashedInputPassword = HashPassword(password);
         result += $"New Input password: {hashedInputPassword}";
 
         // DON'T COMPARE PASSWORD DIRECTLY WHEN USE BCRYPT!!
@@ -28,7 +27,7 @@ public class HashController : ControllerBase
         else
             result += "<br>Password NOT MATCH!!";
 
-        if (BCrypt.Net.BCrypt.Verify(password, hashedDatabasePassword))
+        if (Verify(password, hashedDatabasePassword))
             result += "<br>Password Matched!!";
         else
             result += "<br>Password NOT MATCH!!";
@@ -40,7 +39,6 @@ public class HashController : ControllerBase
     public IActionResult StupidHash([FromQuery] string? password)
     {
         string databasePassword = "password";
-        string StupidHashFunc(string pwd) => pwd + "123";
         string hashedDatabasePassword = StupidHashFunc(databasePassword);
         string result = $"Database password: {hashedDatabasePassword}<br>";
 
@@ -59,5 +57,11 @@ public class HashController : ControllerBase
             result += "<br>Password NOT MATCH!!";
 
         return Content(result, "text/html");
+    }
+
+    public static string StupidHashFunc(string pwd)
+    {
+        // ค่า "123" ในที่นี้ทำหน้าที่เหมือน "Fixed Salt" หรือ "Secret"
+        return pwd + "123";
     }
 }
